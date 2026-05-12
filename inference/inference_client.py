@@ -94,6 +94,12 @@ def submit_inference_job(
     }
 
     resp = requests.post(f"{INFERENCE_SERVICE_URL}/predict", json=payload, timeout=10)
+    if not resp.ok:
+        logger.error(
+            f"GPU service returned {resp.status_code} for /predict.\n"
+            f"Payload sent: {payload}\n"
+            f"Response body: {resp.text}"
+        )
     resp.raise_for_status()  # raises HTTPError if the service returns 4xx/5xx
 
     job_id = resp.json()["job_id"]
