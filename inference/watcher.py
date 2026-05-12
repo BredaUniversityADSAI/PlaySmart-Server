@@ -28,6 +28,7 @@ be processed again on the next watch cycle.
 """
 
 import os
+import csv
 import time
 import logging
 import threading
@@ -41,6 +42,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+STALE_AFTER = 3600
 
 # ── Config from environment variables ─────────────────────────────────────────
 # These are set in docker-compose.yml so you can change them without
@@ -127,9 +129,7 @@ def find_sessions(merged_folder: str, video_folder: str) -> list:
 
         if (
             os.path.exists(video_path)
-            and done_marker not in os.listdir(merged_folder)  # cleaner below
             and not os.path.exists(done_marker)
-            and not os.path.exists(inprogress_marker)
         ):
             sessions.append({
                 "base_name": base_name,
@@ -148,15 +148,21 @@ def process_session(session: dict):
     Creates a .done marker file on success so it won't be reprocessed.
     """
     base_name = session["base_name"]
+    inprogress_marker = session["inprogress_marker"]
 
-    inprogress_marker = os.path.join(
-        os.path.dirname(session["done_marker"]),
-        f"{base_name}.inprogress"
-    )
+    # Handle existing in-progress marker
+    if os.path.exists(inprogress_marker):
+        age = time.time() - os.path.getmtime(inprogress_marker)
+        if age > STALE_AFTER:
+            logger.warning(f"Reclaiming stale marker (age {age:.0f}s): {inprogress_marker}")
+            os.remove(inprogress_marker)
+        else:
+            logger.info(f"Session already in progress, skipping: {base_name}")
+            return {"status": "skipped", "reason": "in_progress"}
 
-    # Claim the session before doing anything else
+    # Claim the session
     with open(inprogress_marker, "x") as f:
-        f.write("inprogress")
+        f.write(str(os.getpid()))
 
     logger.info(f"Processing session: {base_name}")
 
@@ -166,35 +172,32 @@ def process_session(session: dict):
             csv_path=session["csv_path"],
         )
 
-        # Write results to the results folder
+        # Write results
         os.makedirs(RESULTS_FOLDER, exist_ok=True)
         result_path = os.path.join(RESULTS_FOLDER, f"{base_name}_reaction_times.csv")
-
-        import csv
         with open(result_path, "w", newline="") as f:
             if reaction_data:
                 writer = csv.DictWriter(f, fieldnames=reaction_data[0].keys())
                 writer.writeheader()
                 writer.writerows(reaction_data)
-
         logger.info(f"Results written to {result_path}")
 
-        # Clean up and mark done so this session is skipped next cycle
-        os.remove(inprogress_marker)
-
+        # Mark done
         os.makedirs(DONE_FOLDER, exist_ok=True)
         with open(session["done_marker"], "w") as f:
             f.write("processed")
-
         logger.info(f"Session {base_name} marked as done.")
+
         return {"status": "complete", "instances": len(reaction_data), "result_path": result_path}
 
     except Exception as e:
-            logger.error(f"Failed to process session {base_name}: {e}")
-            # Always remove .inprogress so the session can be retried next cycle
-            if os.path.exists(inprogress_marker):
-                os.remove(inprogress_marker)
-            return {"status": "failed", "error": str(e)}
+        logger.exception(f"Failed to process session {base_name}")
+        return {"status": "failed", "error": str(e)}
+
+    finally:
+        # Always remove the marker, success or failure
+        if os.path.exists(inprogress_marker):
+            os.remove(inprogress_marker)
 
 
 # ── Background watcher thread ─────────────────────────────────────────────────
@@ -241,7 +244,7 @@ def list_sessions():
     and haven't been processed yet.
     Useful for checking what's in the watch folder before triggering manually.
     """
-    sessions = find_sessions(WATCH_FOLDER)
+    sessions = find_sessions(WATCH_FOLDER, VIDEO_FOLDER)
     return {
         "pending_sessions": [s["base_name"] for s in sessions],
         "count": len(sessions),
