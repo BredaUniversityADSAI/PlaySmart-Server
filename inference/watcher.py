@@ -62,51 +62,6 @@ app = FastAPI(
 )
 
 
-# ── Helper functions ──────────────────────────────────────────────────────────
-
-# def find_sessions(merged_folder: str, video_folder: str) -> list:
-#     """
-#     Scan a folder for complete sessions (paired .mp4 + _merged.csv).
-#     Recurses one level deep to support subfolders like test_session/.
-
-#     Returns a list of dicts with video_path, csv_path, and base_name.
-#     Skips sessions that already have a .done marker file.
-#     """
-#     sessions = []
-
-#     # Check both the root folder and one level of subfolders
-#     folders_to_check = [folder]
-#     for entry in os.scandir(folder):
-#         if entry.is_dir():
-#             folders_to_check.append(entry.path)
-
-#     for check_folder in folders_to_check:
-#         try:
-#             files = os.listdir(check_folder)
-#         except PermissionError:
-#             continue
-
-#         # Find all mp4 files and check if a matching merged CSV exists
-#         for f in files:
-#             if not f.endswith(".mp4"):
-#                 continue
-
-#             base_name = f[:-4]  # strip .mp4
-#             csv_name = f"{base_name}_merged.csv"
-#             done_marker = f"{base_name}.done"
-#             inProgress_maker = f"{base_name}.inProgress"
-
-#             if csv_name in files and done_marker not in files and inProgress_maker not in files:
-#                 sessions.append({
-#                     "base_name": base_name,
-#                     "video_path": os.path.join(check_folder, f),
-#                     "csv_path": os.path.join(check_folder, csv_name),
-#                     "done_marker": os.path.join(check_folder, done_marker),
-#                     "inProgress_maker": os.path.join(check_folder, inProgress_maker),
-#                 })
-
-#     return sessions
-
 def find_sessions(merged_folder: str, video_folder: str) -> list:
     os.makedirs(DONE_FOLDER, exist_ok=True)
     sessions = []
@@ -118,6 +73,8 @@ def find_sessions(merged_folder: str, video_folder: str) -> list:
 
     for f in csv_files:
         if not f.endswith("_merged.csv"):
+            continue
+        if "valorant" not in f.lower():
             continue
 
         base_name = f[:-len("_merged.csv")]

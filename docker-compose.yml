@@ -1,6 +1,6 @@
 services:
   backend:
-    image: 220755842/bg-app-backend
+    image: playsmartbuas/bg-app-backend
     container_name: app-backend
     ports:
       - "8000:8000"
@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: 220755842/bg-app-frontend
+    image: playsmartbuas/bg-app-frontend
     container_name: app-frontend
     ports:
       - "80:80"
@@ -29,16 +29,16 @@ services:
     restart: unless-stopped
 
   pipeline:
-    image: 220755842/bg-app-pipeline
+    image: playsmartbuas/bg-app-pipeline
     container_name: app-pipeline
     volumes:
       - /mnt/raid0/esports:/mnt/raid0/esports
     environment:
       - TZ=Europe/Amsterdam
-    restart: "no"
+    restart: unless-stopped
 
   inference:
-    image: 220755842/bg-app-inference
+    image: playsmartbuas/bg-app-inference
     container_name: app-inference
     ports:
       - "8001:8001"
