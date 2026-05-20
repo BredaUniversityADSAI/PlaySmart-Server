@@ -1,6 +1,9 @@
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+# Heartbeat
+* * * * * root date '+[heartbeat] %Y-%m-%d %H:%M:%S' > /proc/1/fd/1 2>/proc/1/fd/2
+
 # Pipeline schedules — output goes to docker logs via PID 1
 */5 * * * * root flock -n /tmp/auto_merge.lock sh -c 'cd /app && python auto_merge.py' > /proc/1/fd/1 2>/proc/1/fd/2
 0 2 * * *   root sh -c 'cd /app && python auto_cleaning_and_dq.py' > /proc/1/fd/1 2>/proc/1/fd/2
