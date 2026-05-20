@@ -32,7 +32,6 @@ jobs:
             frontend) echo "path=electron-app" >> $GITHUB_OUTPUT ;;
             *) echo "path=${{ matrix.service }}" >> $GITHUB_OUTPUT ;;
           esac
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:

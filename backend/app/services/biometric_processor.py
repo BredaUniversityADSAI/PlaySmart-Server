@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
 import os
 
 # Updated to use the same data directory structure as videos
@@ -366,7 +366,7 @@ def get_complete_analysis(filename: str, data_directory: Optional[str] = None) -
         try:
             total_df = pd.read_csv(file_path)
             total_rows = len(total_df)
-        except:
+        except (OSError, pd.errors.ParserError, pd.errors.EmptyDataError):
             total_rows = len(df)
     else:
         total_rows = len(df)

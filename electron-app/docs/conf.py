@@ -6,6 +6,9 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import os
+import sys
+
 project = "Breda Guardians Esports Tool"
 copyright = "2026, Endijs Kirsteins, Rachit Ravelia, Raf Sikkema, Kamil Lega, Kees Klijs, Louie Dans, Jack Wade, Tiago Alberto Silva"
 author = "Endijs Kirsteins, Rachit Ravelia, Raf Sikkema, Kamil Lega, Kees Klijs, Louie Dans, Jack Wade, Tiago Alberto Silva"
@@ -23,9 +26,6 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
 ]
-
-import os
-import sys
 
 # Ensure the backend package (backend/) is importable as a top-level path so
 # autodoc can import modules like ``app.router.feedback``. The backend folder

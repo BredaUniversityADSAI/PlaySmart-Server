@@ -513,7 +513,7 @@ async def enrich_matches_with_api(request: EnrichMatchesRequest):
         # Load timezone
         try:
             local_tz = pytz.timezone(request.timezone)
-        except:
+        except pytz.UnknownTimeZoneError:
             local_tz = pytz.UTC
         
         # Fetch recent matches from API
@@ -568,7 +568,7 @@ async def enrich_matches_with_api(request: EnrichMatchesRequest):
                 recording_time_utc = recording_time_local.astimezone(pytz.UTC)
                 recording_time = recording_time_utc.replace(tzinfo=None)
                 
-            except (ValueError, IndexError) as e:
+            except (ValueError, IndexError):
                 enriched_results.append({"filename": filename, "match_data": None})
                 continue
             

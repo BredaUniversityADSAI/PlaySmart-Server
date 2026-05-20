@@ -23,7 +23,6 @@ Date: 2025-06-26
 """
 
 import cv2
-import time
 import csv
 import pandas as pd
 from ultralytics import YOLO
