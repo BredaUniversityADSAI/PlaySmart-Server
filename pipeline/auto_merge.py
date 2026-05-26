@@ -77,6 +77,7 @@ def merge_group(prefix, paths):
     # --- Skip if already merged ---
     if os.path.isfile(out_path):
         print(f"[SKIP] {prefix}: merged file already exists: {out_path}")
+        print("[INFO] Test sucseful")
         return
 
     df_gaze = load_csv_clean_time(paths.get("gaze"), "Gaze") if "gaze" in paths else None
