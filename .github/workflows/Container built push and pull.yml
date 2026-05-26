@@ -14,16 +14,65 @@ on:
           - backend
           - pipeline
           - inference
+  push:
+    branches:
+      - buas/main   # adjust to whichever branch should trigger deploys
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set-matrix.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'electron-app/**'
+            backend:
+              - 'backend/**'
+            pipeline:
+              - 'pipeline/**'
+            inference:
+              - 'inference/**'
+            compose:
+              - 'docker-compose.yml'
+
+      - name: Build service matrix
+        id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ github.event.inputs.service }}" = "all" ]; then
+              echo 'services=["backend","pipeline","inference","frontend"]' >> $GITHUB_OUTPUT
+            else
+              echo 'services=["${{ github.event.inputs.service }}"]' >> $GITHUB_OUTPUT
+            fi
+          elif [ "${{ steps.filter.outputs.compose }}" = "true" ]; then
+            echo "docker-compose.yml changed — rebuilding all services"
+            echo 'services=["backend","pipeline","inference","frontend"]' >> $GITHUB_OUTPUT
+          else
+            services=()
+            [ "${{ steps.filter.outputs.frontend }}" = "true" ]  && services+=("\"frontend\"")
+            [ "${{ steps.filter.outputs.backend }}" = "true" ]   && services+=("\"backend\"")
+            [ "${{ steps.filter.outputs.pipeline }}" = "true" ]  && services+=("\"pipeline\"")
+            [ "${{ steps.filter.outputs.inference }}" = "true" ] && services+=("\"inference\"")
+            joined=$(IFS=,; echo "${services[*]}")
+            echo "services=[${joined}]" >> $GITHUB_OUTPUT
+          fi
+
   build-and-push:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.services != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ${{ github.event.inputs.service == 'all' && fromJson('["backend","pipeline","inference","frontend"]') || fromJson(format('["{0}"]', github.event.inputs.service)) }}
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Map service to folder
         id: ctx
@@ -32,6 +81,7 @@ jobs:
             frontend) echo "path=electron-app" >> $GITHUB_OUTPUT ;;
             *) echo "path=${{ matrix.service }}" >> $GITHUB_OUTPUT ;;
           esac
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -46,19 +96,15 @@ jobs:
           tags: playsmartbuas/bg-app-${{ matrix.service }}:latest
 
   deploy:
+    needs: [detect-changes, build-and-push]
     runs-on: self-hosted
-    needs: build-and-push
     steps:
-      - name: Pull and restart
+      - name: Pull and restart changed services
         run: |
           cd /home/kowalski/app
-
-          if [ "${{ github.event.inputs.service }}" = "all" ]; then
-            docker compose pull
-            docker compose up -d
-          else
-            docker compose pull ${{ github.event.inputs.service }}
-            docker compose up -d ${{ github.event.inputs.service }}
-          fi
-
-          docker compose ps 
+          services='${{ needs.detect-changes.outputs.services }}'
+          svc_list=$(echo "$services" | jq -r '.[]' | tr '\n' ' ')
+          echo "Deploying: $svc_list"
+          docker compose pull $svc_list
+          docker compose up -d $svc_list
+          docker compose ps
