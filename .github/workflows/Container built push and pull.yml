@@ -16,7 +16,7 @@ on:
           - inference
   push:
     branches:
-      - buas/main   # adjust to whichever branch should trigger deploys
+      - main   
 
 jobs:
   detect-changes:
