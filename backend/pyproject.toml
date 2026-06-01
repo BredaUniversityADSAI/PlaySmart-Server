@@ -9,40 +9,46 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 
-# API
+# ---- Your Application Dependencies ----
+streamlit = { version = "^1.40.2", python = "!=3.9.7" }
+tobii-research = "2.0.0"
+matplotlib = "^3.7.2"
+pandas = "2.1.3"
+numpy = "1.26.2"
+tensorflow-io-gcs-filesystem = "0.27.0"
+opencv-python = "^4.5.5"
+scikit-learn = "^1.3.0"
+screeninfo = "^0.8.1"
+pynput = "^1.7.7"
+keyboard = "^0.13.5"
+nltk = "^3.9.1"
+torch = "^2.4.1"
+torchvision = "^0.19.1"
+torchaudio = "^2.4.1"
+openai-whisper = { git = "https://github.com/openai/whisper.git" }
+transformers = "^4.45.0"
+datasets = "^3.0.1"
+librosa = "^0.10.2.post1"
+soundfile = "^0.12.1"
+pygame = "^2.6.1"
+sqlalchemy = "2.0.23"
+psycopg2-binary = "^2.9.10"
+paramiko = "^3.5.0"
+moviepy = "^2.1.1"
+mss = "^10.0.0"
+ultralytics = "^8.3.77"
+
+# ---- Added From Backend Requirements ----
 fastapi = "0.104.1"
 uvicorn = { version = "0.24.0", extras = ["standard"] }
-python-multipart = "0.0.6"
-python-dotenv = "^1.2.1"
-
-# Auth
 python-jose = { version = "3.3.0", extras = ["cryptography"] }
 passlib = { version = "1.7.4", extras = ["bcrypt"] }
+python-multipart = "0.0.6"
 pydantic = { version = "1.10.8", extras = ["email"] }
 email-validator = "2.0.0"
 bcrypt = "4.0.1"
-
-# Database
-sqlalchemy = "2.0.23"
-psycopg2-binary = "^2.9.10"
-
-# Data
-pandas = "2.1.3"
-numpy = "1.26.2"
 httpx = "0.28.1"
-paramiko = "^3.5.0"
-
-# ML / Inference
-torch = "^2.4.1"
-torchvision = "^0.19.1"
-opencv-python-headless = "^4.5.5"
-ultralytics = "^8.3.77"
-scikit-learn = "^1.3.0"
-
-# Video / Audio (biometric processor)
-moviepy = "^2.1.1"
-librosa = "^0.10.2.post1"
-openai-whisper = { git = "https://github.com/openai/whisper.git" }
+python-dotenv = "^1.2.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"

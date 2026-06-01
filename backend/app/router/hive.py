@@ -76,7 +76,7 @@ def _load_ign_mapping_raw(sftp: paramiko.SFTPClient) -> dict:
     so callers can treat a missing mapping as a graceful degradation rather
     than an error.
     """
-    remote_path = f"{HIVE_BASE_PATH}/json/ign_mapping.json"
+    remote_path = f"{HIVE_BASE_PATH}/json/merged/merged_json.json"
     try:
         with sftp.open(remote_path, "r") as f:
             raw = f.read().decode("utf-8", errors="replace")
