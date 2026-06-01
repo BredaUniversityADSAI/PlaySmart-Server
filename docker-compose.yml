@@ -13,7 +13,7 @@ services:
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_HOURS=24
       - DATABASE_URL=sqlite:///./bget.db
-      - RIOT_API_KEY=RGAPI-f55d88f8-dd75-4a03-b054-e8b29e5fb6b5
+      - RIOT_API_KEY=RGAPI-c57aeed2-1ecb-4fc2-9b12-531f88bcfb23
       - HENRIK_API_KEY=HDEV-a23aa305-d8c8-4780-ac89-49935b660e26
       - CORS_ORIGINS=*
       - ENVIRONMENT=production
