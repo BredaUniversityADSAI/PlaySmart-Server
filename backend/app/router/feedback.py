@@ -115,3 +115,60 @@ async def delete_feedback(feedback_id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error deleting feedback: {str(e)}",
         )
+        
+        
+        
+        
+
+# -------------------------------
+# Get Error Patterns
+# -------------------------------
+@router.get("/feedback/{riot_id}/{game}/patterns")
+async def get_error_patterns(
+    riot_id: str,
+    game: str,
+    db: Session = Depends(get_db),
+):
+    """
+    Fetch cross-match error patterns for a player, grouped by error_code.
+
+    Args:
+        riot_id (str): Riot ID of the player.
+        game (str): Name of the game (e.g., "valorant" or "lol").
+        db (Session): Database session.
+
+    Raises:
+        HTTPException: If fetching patterns fails.
+
+    Returns:
+        dict: { patterns: [...], total_annotations, unique_errors,
+                recurring_count, matches_analysed }
+    """
+    try:
+        patterns = feedback_crud.get_error_patterns(
+            db=db, riot_id=riot_id, game=game
+        )
+
+        # Compute summary stats for the header cards
+        total_annotations = sum(p["total_occurrences"] for p in patterns)
+        unique_errors      = len(patterns)
+        recurring_count    = sum(1 for p in patterns if p["is_recurring"])
+        matches_analysed   = len({
+            occ["match_id"]
+            for p in patterns
+            for occ in p["occurrences"]
+            if occ["match_id"]
+        })
+
+        return {
+            "patterns":          patterns,
+            "total_annotations": total_annotations,
+            "unique_errors":     unique_errors,
+            "recurring_count":   recurring_count,
+            "matches_analysed":  matches_analysed,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching error patterns: {str(e)}",
+        )
