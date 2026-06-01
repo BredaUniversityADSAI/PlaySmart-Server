@@ -27,7 +27,6 @@ from app.router import (
     match_analytics,
 )
 from app.router import coach as coach_router
-from app.router import reaction_time as reaction_time_router
 from app.router.match_analytics import router as analytics_router
 import os
 
@@ -78,9 +77,6 @@ app.include_router(match_data.router, prefix="/api/matches", tags=["Matches"])
 app.include_router(videos.router, prefix="/api", tags=["Videos"])
 app.include_router(coach_router.router, prefix="/api/coach", tags=["Coach"])
 app.include_router(biometrics.router, prefix="/api/biometrics", tags=["Biometrics"])
-app.include_router(
-    reaction_time_router.router, prefix="/api/reaction_time", tags=["ReactionTime"]
-)
 app.include_router(valorant.router)
 app.include_router(hive.router, prefix="/api/hive", tags=["hive"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["analytics"])
