@@ -69,6 +69,7 @@ services:
       mkdir -p /home/localhost/data/merged &&
       mkdir -p /home/localhost/data/gaze &&
       mkdir -p /home/localhost/data/eda &&
+      mkdir -p /home/localhost/data/audio &&
       chown -R 1234:100 /home/localhost/data &&
-      chmod -R 755 /home/localhost/data &&
+      chmod -R 775 /home/localhost/data &&
       /usr/sbin/sshd -D"
